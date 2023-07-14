@@ -86,7 +86,8 @@ app.get('/', (request, response) => {
     });
 });
 
-
+const groupsRouter = require('./routes/groups-router')
+app.use("/groups", groupsRouter)
 
 
 // Keep this route at the end of this file, only before the module.exports!
@@ -98,6 +99,8 @@ app.get('*', (request, response) => {
         attemptedPath: request.path
     });
 });
+
+
 
 // Export everything needed to run the server.
 module.exports = {
