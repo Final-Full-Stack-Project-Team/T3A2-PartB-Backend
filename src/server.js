@@ -86,7 +86,7 @@ app.get('/', (request, response) => {
     });
 });
 
-const groupsRouter = require('./routes/groups-router')
+const groupsRouter = require('./routes/groups_routes')
 app.use("/groups", groupsRouter)
 
 
