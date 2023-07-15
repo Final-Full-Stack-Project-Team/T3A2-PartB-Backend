@@ -89,7 +89,7 @@ app.get('/', (request, response) => {
 const groupsRouter = require('./routes/groups_routes')
 app.use("/groups", groupsRouter)
 
-const userRouter = require('./routes/UserRoutes.js')
+const userRouter = require('./routes/user_routes.js')
 app.use('/users', userRouter)
 
 

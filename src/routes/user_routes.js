@@ -1,5 +1,5 @@
 const express = require("express")
-const {signup, login, passwordResetEmail, passwordResetPage, passwordResetForm, getUser, getAllUsers} = require("../controllers/UserControllers")
+const {signup, login, passwordResetEmail, passwordResetPage, passwordResetForm, getUser, getAllUsers} = require("../controllers/users_controllers")
 const userRouter = express.Router()
 
 userRouter.get("/", getAllUsers)

@@ -1,6 +1,6 @@
-const User = require('../models/UserModels.js')
+const User = require('../models/user_model.js')
 const bcrypt = require("bcrypt")
-const { createToken, verifyToken } = require('../services/AuthServices.js')
+const { createToken, verifyToken } = require('../services/auth_services.js')
 const nodemailer = require('nodemailer')
 require('dotenv').config()
 
@@ -79,7 +79,7 @@ const login = async (request, response) => {
         if (user && bcrypt.compareSync(request.body.password, user.password)) {
             const token = createToken(user._id, user.email, '7d')
             response.json({
-                message: "Login successful, redirecting to homepage",
+                message: "Login successful",
                 data: {
                     _id: user._id,
                     name: user.name
