@@ -47,7 +47,7 @@ const deleteAllGroups = async (request, response) => {
     let message = "";
     if (groupCount === 0) {
         message = "There are no groups to delete"
-    } else {
+    } else { // use plural to display message if the groupCount is not 1
         message = `Deletion successful. ${groupCount} group${groupCount !== 1 ? 's' : ''} deleted.`;
     }
 
@@ -58,16 +58,22 @@ const deleteAllGroups = async (request, response) => {
 }
 
 const deleteGroup = async (request, response) => {
-deleteSingleGroup = await Group.findByIdAndDelete(request.params.id)
-                    .catch(error => {
-                        console.log("Cannot delete. Could not find id. Error:\n" + error)
-                        response.status(404)
-                        })
-if (deleteSingleGroup) {
-    response.json ({message: "Group deleted."})
-} else {
-    response.json ({message: "Cannot delete. Could not find id."})
-}
+    // Attempt to find and delete the group with the specified ID
+    deleteSingleGroup = await Group.findByIdAndDelete(request.params.id)
+        .catch(error => {
+            // Log an error message if the deletion fails due to an invalid ID
+            console.log("Cannot delete. Could not find ID. Error:\n" + error);
+            // Set the response status to 404 (Not Found)
+            response.status(404);
+        });
+
+    if (deleteSingleGroup) {
+        // If the group is successfully deleted, send a JSON response with a success message
+        response.json({ message: "Group deleted." });
+    } else {
+        // If the group deletion fails (due to invalid ID), send a JSON response with an error message
+        response.json({ message: "Cannot delete. Could not find ID." });
+    }
 }
 
 // Export the functions to be used in other modules
