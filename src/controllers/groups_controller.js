@@ -38,12 +38,25 @@ const createGroup = async (request, response) => {
 // Function to delete all groups
 const deleteAllGroups = async (request, response) => {
     // Delete all groups from the database
-    await Group.deleteMany()
+    await Group.deleteMany({})
     // Send a JSON response indicating that all groups have been deleted
     response.json({
         "message": "All Groups deleted."
     })
 }
 
+const deleteGroup = async (request, response) => {
+deleteSingleGroup = await Group.findByIdAndDelete(request.params.id)
+                    .catch(error => {
+                        console.log("Cannot delete. Could not find id. Error:\n" + error)
+                        response.status(404)
+                        })
+if (deleteSingleGroup) {
+    response.json ({message: "Group deleted."})
+} else {
+    response.json ({message: "Cannot delete. Could not find id."})
+}
+}
+
 // Export the functions to be used in other modules
-module.exports = {getGroups, getGroup, createGroup, deleteAllGroups}
+module.exports = {getGroups, getGroup, createGroup, deleteAllGroups, deleteGroup}
