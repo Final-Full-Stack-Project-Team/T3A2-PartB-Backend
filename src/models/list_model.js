@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const { boolean } = require('webidl-conversions')
 
 // Schema for list model
 const ListSchema = new mongoose.Schema({
@@ -7,6 +8,7 @@ const ListSchema = new mongoose.Schema({
         required: true
     },
     dateCreated: Date,
+    isCompleted: Boolean,
 
     // Referencing the items collection
     items: [{ type: mongoose.Types.ObjectId, ref: 'Item' }],

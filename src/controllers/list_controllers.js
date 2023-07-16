@@ -1,4 +1,3 @@
-const { request } = require('http')
 const List = require('../models/list_model.js')
 const User = require('../models/user_model.js')
 
@@ -47,6 +46,7 @@ const createList = async (request, response) => {
         let newList = new List({
             name: request.body.name,
             dateCreated: new Date(),
+            isCompleted: false,
             users: users,
             admin: admin._id
         })
@@ -94,9 +94,37 @@ const deleteList = async (request, response) => {
     }
 }
 
+const modifyList = async (request, response) => {
+    try {
+        const listId = request.params._id
+        const updatedData = request.body
+
+        const list = await List.findById(listId)
+        
+        if(!list) {
+            throw new Error("List not found")
+        }
+
+        Object.keys(updatedData).forEach((key) => {
+            if (list[key] !== undefined) {
+                list[key] = updatedData[key]
+            }
+        })
+
+        await list.save()
+        response.send(list)
+    } catch(error) {
+        response.json({
+            error: error.message
+        })
+    }
+}
+
+
 module.exports = {
     getList,
     getAllLists,
     createList,
-    deleteList
+    deleteList,
+    modifyList
 }
