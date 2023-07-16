@@ -120,11 +120,65 @@ const modifyList = async (request, response) => {
     }
 }
 
+const removeUserFromList = async (request, response) => {
+    try {
+        const listId = request.params._id
+        const userId = request.body.user
+
+        const user = await User.findById(userId)
+        const list = await List.findById(listId)
+
+        if (!user) {
+            throw new Error("User not found")
+        }
+        if (!list) {
+            throw new Error("List not found")
+        }
+
+        if (list.users.length === 0) {
+            deleteList(request, response)
+            return
+        }
+
+        console.log(list.admin == userId)
+        if (list.admin == userId) {
+            const newAdmin = list.users[0]
+            await List.updateOne(
+                {_id: listId},
+                { $set: {admin: newAdmin._id}}
+            )
+            await List.updateOne(
+                {_id: listId},
+                {$pull: { users: newAdmin._id }}
+            )
+        } else if (list.admin !== user._id) {
+            
+            await List.updateOne(
+                {_id: listId},
+                { $pull: { users: userId }}
+            )
+        }
+
+        await User.updateOne(
+            {_id: userId},
+            { $pull: {lists: listId}}
+        )
+
+        response.json({
+            message: `${user.name} was removed from the list`
+        })
+    } catch(error) {
+        response.json({
+            error: error.message
+        })
+    }
+}
 
 module.exports = {
     getList,
     getAllLists,
     createList,
     deleteList,
-    modifyList
+    modifyList,
+    removeUserFromList
 }
