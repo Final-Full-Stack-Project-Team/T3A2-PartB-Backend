@@ -1,0 +1,22 @@
+const mongoose = require('mongoose')
+
+// Schema for list model
+const ListSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true
+    },
+    dateCreated: Date,
+
+    // Referencing the items collection
+    items: [{ type: mongoose.Types.ObjectId, ref: 'Item' }],
+
+    // Referencing the users collection
+    users: [{ type: mongoose.Types.ObjectId, ref: 'User' }],
+    // Referencing a user as the admin of the list
+    admin: {type: mongoose.Types.ObjectId, ref: 'User'}
+})
+
+const List = mongoose.model('List', ListSchema)
+
+module.exports = List
