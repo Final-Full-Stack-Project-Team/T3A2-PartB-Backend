@@ -89,6 +89,9 @@ app.get('/', (request, response) => {
 const groupsRouter = require('./routes/groups_routes')
 app.use("/groups", groupsRouter)
 
+const userRouter = require('./routes/user_routes.js')
+app.use('/users', userRouter)
+
 
 // Keep this route at the end of this file, only before the module.exports!
 // A 404 route should only trigger if no preceding routes or middleware was run. 
