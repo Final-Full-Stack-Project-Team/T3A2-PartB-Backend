@@ -8,6 +8,19 @@ const getGroups = async (request, response) => {
     response.send(groups)
 }
 
+// Function to get a single group by id 
+const getGroup = async (request, response) => {
+    let group = await Group.findById(request.params.id)
+        .catch(error => {
+            console.log("Could not find id. Error:\n" + error)
+            response.status(404)
+            response.json({
+                error: "Could not find id in the database."
+            })
+        })
+    response.send(group)
+}
+
 // Function to create a new group
 const createGroup = async (request, response) => {
     // Create a new group object based on the request body
@@ -33,4 +46,4 @@ const deleteAllGroups = async (request, response) => {
 }
 
 // Export the functions to be used in other modules
-module.exports = {getGroups, createGroup, deleteAllGroups}
+module.exports = {getGroups, getGroup, createGroup, deleteAllGroups}
