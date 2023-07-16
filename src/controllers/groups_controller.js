@@ -1,6 +1,6 @@
 const Group = require('../models/groups_model')
 
-// Function to get all groups
+// Function to get all groups 
 const getGroups = async (request, response) => {
     // Fetch all groups from the database
     let groups = await Group.find()
