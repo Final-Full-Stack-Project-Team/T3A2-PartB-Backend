@@ -71,8 +71,32 @@ const createList = async (request, response) => {
     }
 }
 
+const deleteList = async (request, response) => {
+    try {
+
+        const listId = request.params._id
+
+        await List.deleteOne({ _id: listId })
+
+        await User.updateMany(
+            {lists: listId},
+            { $pull: {lists: listId}}
+        )
+        
+        response.json({
+            message: "list deleted successfully"
+        })
+
+    } catch(error) {
+        response.json({
+            error: error.message
+        })
+    }
+}
+
 module.exports = {
     getList,
     getAllLists,
-    createList
+    createList,
+    deleteList
 }
