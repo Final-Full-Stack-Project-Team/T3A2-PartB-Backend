@@ -37,11 +37,23 @@ const createGroup = async (request, response) => {
 
 // Function to delete all groups
 const deleteAllGroups = async (request, response) => {
+    // Get the count of groups before deletion
+    const groupCount = await Group.countDocuments({});
+
     // Delete all groups from the database
     await Group.deleteMany({})
+
+    // Create the message with the count of deleted groups
+    let message = "";
+    if (groupCount === 0) {
+        message = "There are no groups to delete"
+    } else {
+        message = `Deletion successful. ${groupCount} group${groupCount !== 1 ? 's' : ''} deleted.`;
+    }
+
     // Send a JSON response indicating that all groups have been deleted
     response.json({
-        "message": "All Groups deleted."
+        "message": message
     })
 }
 
