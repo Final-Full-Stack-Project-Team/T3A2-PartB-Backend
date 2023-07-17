@@ -11,7 +11,8 @@ const getList = async (request, response) => {
             response.send(list)
         // Else throw error if list not found
         } else if (!list) {
-            throw new Error("List not found")
+            response.status(404).json({error: "List not found"})
+            return
         }
     } catch(error) {
         // If id does not have enough characters, this logic will run
@@ -21,7 +22,7 @@ const getList = async (request, response) => {
                 error: "List not found"
             })
         } else {
-            response.json({
+            response.status(500).json({
                 error: error.message
             })
         }
@@ -35,7 +36,7 @@ const getAllLists = async (request, response) => {
         response.send(lists)
 
     } catch(error) {
-        response.json({
+        response.status(500).json({
             error: error.message
         })
     }
@@ -53,7 +54,7 @@ const createList = async (request, response) => {
         const existingUsers = await User.find({ _id: { $in: users } });
         // If the length of users is not equal to the existing users
         // Then one or more users were not found in the database
-        if (existingUsers.length !== users.length) {
+        if (existingUsers.length !== users.length || !admin) {
           return response.status(404).json({ error: 'One or more users not found' });
         } 
 
@@ -83,7 +84,7 @@ const createList = async (request, response) => {
         response.json(newList)
 
     } catch(error) {
-        response.json({
+        response.status(500).json({
             error: error.message
         })
     }
@@ -97,7 +98,11 @@ const deleteList = async (request, response) => {
         const listId = request.params._id
 
         // Delete the list matching the listId
-        await List.deleteOne({ _id: listId })
+        const list = await List.findByIdAndDelete( listId )
+        if (!list) {
+            response.status(404).json({error: "list not found"})
+            return
+        }
 
         // Update user documents, removing the deleted list
         await User.updateMany(
@@ -110,7 +115,7 @@ const deleteList = async (request, response) => {
         })
 
     } catch(error) {
-        response.json({
+        response.status(500).json({
             error: error.message
         })
     }
@@ -119,26 +124,14 @@ const deleteList = async (request, response) => {
 // End point for modifying lists
 const modifyList = async (request, response) => {
     try {
-        const listId = request.params._id
-        const updatedData = request.body
-
-        const list = await List.findById(listId)
-        
+        const list = await List.findByIdAndUpdate(request.params._id, request.body, {new: true})
         if(!list) {
-            throw new Error("List not found")
+            response.status(404).json({ error: "List not found" })
+            return
         }
-
-        // Checks if any of the key value pairs are within the list and replaces them
-        Object.keys(updatedData).forEach((key) => {
-            if (list[key] !== undefined) {
-                list[key] = updatedData[key]
-            }
-        })
-
-        await list.save()
         response.send(list)
     } catch(error) {
-        response.json({
+        response.status(500).json({
             error: error.message
         })
     }
@@ -157,12 +150,14 @@ const removeUserFromList = async (request, response) => {
 
         // user error checking
         if (!user) {
-            throw new Error("User not found")
+            response.status(404).json({ error: "User not found" })
+            return
         }
 
         //list error checking
         if (!list) {
-            throw new Error("List not found")
+            response.status(404).json({ error: "List not found" })
+            return
         }
 
         // If the only user left is the admin which ie getting removed
@@ -201,8 +196,9 @@ const removeUserFromList = async (request, response) => {
         response.json({
             message: `${user.name} was removed from the list`
         })
+
     } catch(error) {
-        response.json({
+        response.status(500).json({
             error: error.message
         })
     }
