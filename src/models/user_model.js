@@ -15,8 +15,10 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+
     // Foreign object of lists that belong to users
-    lists: [{ type: mongoose.Types.ObjectId, ref: 'List' }]
+    lists: [{ type: mongoose.Types.ObjectId, ref: 'List' }],
+    groups: [{ type: mongoose.Types.ObjectId, ref: 'Group' }]
 })
 
 // Attach schema to model

@@ -1,16 +1,14 @@
 const express = require('express')
 const groupsRouter = express.Router();
-const {getGroups, createGroup, deleteAllGroups} = require('../controllers/groups_controller')
+const {getGroups, getGroup, createGroup, updateGroup, deleteAllGroups, deleteGroup} = require('../controllers/groups_controller')
 
 // Define routes for handling group-related operations
-// GET route to retrieve all groups
 groupsRouter.get("/", getGroups)
-
-// POST route to create a new group
+groupsRouter.get("/:id", getGroup)
 groupsRouter.post("/", createGroup)
-
-// DELETE route to delete all groups
+groupsRouter.put("/:id", updateGroup)
 groupsRouter.delete ("/delete_all", deleteAllGroups)
+groupsRouter.delete ("/:id", deleteGroup)
 
 // Export the groupsRouter to be used in other modules
 module.exports = groupsRouter;
