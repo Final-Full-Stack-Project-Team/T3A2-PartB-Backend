@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-const { boolean } = require('webidl-conversions')
 
 // Schema for list model
 const ListSchema = new mongoose.Schema({
