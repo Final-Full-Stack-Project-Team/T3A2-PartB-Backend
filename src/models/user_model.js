@@ -15,6 +15,7 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+
     // Foreign object of lists that belong to users
     lists: [{ type: mongoose.Types.ObjectId, ref: 'List' }]
 })

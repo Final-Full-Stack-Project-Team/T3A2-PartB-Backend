@@ -1,4 +1,6 @@
-const Group = require('../models/groups_model')
+const { response } = require('express');
+const Group = require('../models/groups_model');
+const User = require('../models/user_model');
 
 // Function to get all groups 
 const getGroups = async (request, response) => {
@@ -24,18 +26,30 @@ const getGroup = async (request, response) => {
     };
 };
 
+
 // Function to create a new group
 const createGroup = async (request, response) => {
-    // Create a new group object based on the request body
-    let newGroup = new Group({
-        group_name: request.body.group_name,
-        group_members: request.body.group_members
-    });
-    // Save the new group to the database
-    await newGroup.save()
-    // Set the response status to 201 (Created) and send the new group as a response
-    response.status(201)
-    response.send(newGroup)
+    try {
+        // Assuming you have the user who created the group and the group members in the request body
+        const { group_name, group_members, created_by } = request.body;
+
+        // Create a new group object based on the request body
+        let newGroup = new Group({
+            group_name: group_name,
+            dateCreated: new Date(),
+            group_members: group_members,
+            created_by: created_by // Assuming the 'created_by' field is an ObjectId referencing the user collection
+        });
+
+        // Save the new group to the database
+        await newGroup.save();
+
+        // Respond with the newly created group
+        response.json(newGroup);
+    } catch (error) {
+        // Handle errors appropriately
+        response.status(500).json({ error: 'Internal Server Error' });
+    }
 };
 
 const updateGroup = async (request, response) => {
