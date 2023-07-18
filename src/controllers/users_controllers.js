@@ -14,17 +14,14 @@ const getUser = async (request, response) => {
             }
             response.send(userData)
         } else {
-            throw new Error("User not found")
+            response.status(404).json({ error: "User not found" })
+            return
         }
     } catch(error) {
         if (error.name === "CastError" && error.kind === "ObjectId") {
-            response.json({
-                error: "User not found"
-            })
+            response.status(404).json({ error: "User not found" })
         } else {
-            response.json({
-                error: error.message
-            })
+            response.status(500).json({ error: error.message })
         }
     }
 }
@@ -36,9 +33,7 @@ const getAllUsers = async (request, response) => {
         response.send(userData)
 
     } catch(error) {
-        response.json({
-            error: error.message
-        })
+        response.status(500).json({ error: error.message })
     }
 }
 
@@ -54,7 +49,8 @@ const signup = async (request, response) => {
             })
             const existingUser = await User.findOne({ email: newUser.email })
             if (existingUser) {
-                throw new Error('User already exists')
+                response.status(409).json({ error: "User with that email already exists" })
+                return
             }
             await newUser.save()
 
@@ -67,9 +63,7 @@ const signup = async (request, response) => {
             })
     
     } catch(error) {
-        response.json({
-            message: error.message
-        })
+        response.status(500).json({ error: error.message })
     }
 }
 
@@ -87,16 +81,16 @@ const login = async (request, response) => {
                 token: token
             })
         } else {
-            throw new Error("Username / Password do not match")
+            response.status(401).json({ error: "Invalid email or password" })
+            return
         }
     } catch (error) {
-        response.json({
-            error: error.message
-        })
+        response.status(500).json({ error: error.message })
     }
 }
 
 const passwordResetEmail = async (request, response) => {
+    try{
     const user = await User.findOne({email: request.body.email})
 
     // Create a transporter object
@@ -120,18 +114,20 @@ const passwordResetEmail = async (request, response) => {
 
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
-                console.log(error)
+                throw new Error(error)
             } else {
               response.json({
                 message: "Email successfully sent"
               })
             }
           });
+    
 
     } else {
-        response.json({
-            error: "User not found"
-        })
+        response.status(404).json({error: "User not found"})
+    }
+    } catch(error) {
+        response.status(500).json({ error: error.message })
     }
 }
 
@@ -139,8 +135,8 @@ const passwordResetPage = async (request, response) => {
     try {
         const user = await User.findById({_id: request.params._id})
         if (!user) {
-            console.log("no user")
-            throw new Error("User does not exist")
+            response.status(404).json({ error: "User not found" })
+            return
         }
         const token = request.params.token
         const decoded = verifyToken(token)
@@ -150,13 +146,9 @@ const passwordResetPage = async (request, response) => {
 
     } catch(error) {
         if (error.name === "CastError" && error.kind === "ObjectId") {
-            response.json({
-                error: error
-            })
+            response.status(404).json({ error: "User not found" })
         } else {
-            response.json({
-                error: error.message
-            })
+            response.status(500).json({ error: error.message })
         }
     }
 }
@@ -171,28 +163,24 @@ const passwordResetForm = async (request, response) => {
 
         let user = await User.findByIdAndUpdate(request.params._id, { $set: {password: password}}, {new: true})
 
-        // if we could find the note we will update it
         if (!request.body.password || request.body.password.length === 0){
-            throw new Error("Invalid password")
+            response.status(401).json({ error: "Invalid password" })
+            return
         }
         if (!user) {
-            throw new Error("User not found")
+            response.status(404).json({ error: "User not found" })
+            return
         }
 
         response.json({
-            message: "Password has been successfully changed",
-            user: user
+            message: "Password has been successfully changed"
         })
 
     } catch(error) {
         if (error.name === "CastError" && error.kind === "ObjectId") {
-            response.status(400).json({
-                error: "User does not exist"
-            })
+            response.status(404).json({ error: "User not found" })
         } else {
-            response.json({
-                error: error.message
-            })
+            response.status(500).json({ error: error.message })
         }
     }
 }
