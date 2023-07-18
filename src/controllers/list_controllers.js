@@ -121,7 +121,7 @@ const deleteList = async (request, response) => {
     }
 }
 
-// End point for modifying lists
+// End point for modifying list name and any other data that is not relating to users
 const modifyList = async (request, response) => {
     try {
         const list = await List.findByIdAndUpdate(request.params._id, request.body, {new: true})
@@ -135,9 +135,39 @@ const modifyList = async (request, response) => {
         }
         response.send(list)
     } catch(error) {
-        response.status(500).json({
-            error: error.message
-        })
+        response.status(500).json({error: error.message})
+    }
+}
+
+const addUserToList = async (request, response) => {
+    try {
+        // declare user and list
+        const user = await User.findById(request.body.shared_with)
+        const list = await List.findById(request.params._id)
+
+        if (!user) {
+            response.status(404).json({ error: "User not found" })
+        }
+
+        if (!list) {
+            response.status(404).json({ error: "List not found" })
+        }
+
+        const usersInList = [...list.shared_with]
+
+        const checkIfExistingUser = usersInList.some((userId) => userId.equals(request.body.shared_with));
+        if (checkIfExistingUser) {
+            response.status(400).json({ error: "User is already in this list" })
+            return
+        }
+
+        usersInList.push(request.body.shared_with)
+
+        const updatedList = await List.findByIdAndUpdate(request.params._id, {shared_with: usersInList}, {new: true})
+        
+        response.status(200).send(updatedList)
+    } catch(error) {
+        response.status(500).json({error: error.message})
     }
 }
 
@@ -146,7 +176,7 @@ const removeUserFromList = async (request, response) => {
     try {
         // declare values from params and body
         const listId = request.params._id
-        const userId = request.body.user
+        const userId = request.body.shared_with
         
         //declare user and list for error checking
         const user = await User.findById(userId)
@@ -166,7 +196,7 @@ const removeUserFromList = async (request, response) => {
 
         // If the only user left is the admin which ie getting removed
         // then the list will get deleted
-        if (list.users.length === 0) {
+        if (list.shared_with.length === 0) {
             deleteList(request, response)
             return
         }
@@ -174,20 +204,20 @@ const removeUserFromList = async (request, response) => {
         // Logic to run if the admin is being removed from list
         if (list.admin == userId) {
             // Sets new admin to be the first user in the array
-            const newAdmin = list.users[0]
+            const newAdmin = list.shared_with[0]
             await List.updateOne(
                 {_id: listId},
                 { $set: {admin: newAdmin._id}}
             )
             await List.updateOne(
                 {_id: listId},
-                {$pull: { users: newAdmin._id }}
+                {$pull: { shared_with: newAdmin._id }}
             )
         } else if (list.admin !== user._id) {
             // If user is not admin, then remove the user from the users array
             await List.updateOne(
                 {_id: listId},
-                { $pull: { users: userId }}
+                { $pull: { shared_with: userId }}
             )
         }
 
@@ -214,5 +244,6 @@ module.exports = {
     createList,
     deleteList,
     modifyList,
+    addUserToList,
     removeUserFromList
 }
