@@ -14,9 +14,13 @@ const ListSchema = new mongoose.Schema({
     items: [{ type: mongoose.Types.ObjectId, ref: 'Item' }],
 
     // Referencing the users collection
-    users: [{ type: mongoose.Types.ObjectId, ref: 'User' }],
+    shared_with: [{ type: mongoose.Types.ObjectId, ref: 'User' }],
     // Referencing a user as the admin of the list
-    admin: {type: mongoose.Types.ObjectId, ref: 'User'}
+    admin: {
+        type: mongoose.Types.ObjectId,
+        ref: 'User',
+        required: true
+    }
 })
 
 const List = mongoose.model('List', ListSchema)

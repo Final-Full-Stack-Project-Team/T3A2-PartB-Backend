@@ -48,13 +48,13 @@ const createList = async (request, response) => {
         // Admin gets passed in the json body
         const admin = await User.findById(request.body.admin)
         // Array of users passed in the json body
-        const users = request.body.users
+        const shared_with = request.body.shared_with
 
         // Looking for users in DB from the id's passed into the users array
-        const existingUsers = await User.find({ _id: { $in: users } });
+        const existingUsers = await User.find({ _id: { $in: shared_with } });
         // If the length of users is not equal to the existing users
         // Then one or more users were not found in the database
-        if (existingUsers.length !== users.length || !admin) {
+        if (existingUsers.length !== shared_with.length || !admin) {
           return response.status(404).json({ error: 'One or more users not found' });
         } 
 
@@ -63,7 +63,7 @@ const createList = async (request, response) => {
             name: request.body.name,
             dateCreated: new Date(),
             isCompleted: false,
-            users: users,
+            shared_with: shared_with,
             admin: admin._id
         })
 
@@ -127,6 +127,10 @@ const modifyList = async (request, response) => {
         const list = await List.findByIdAndUpdate(request.params._id, request.body, {new: true})
         if(!list) {
             response.status(404).json({ error: "List not found" })
+            return
+        }
+        if (request.body.hasOwnProperty('shared_with')) {
+            response.status(500).json({ error: "Cannot edit users here" })
             return
         }
         response.send(list)
