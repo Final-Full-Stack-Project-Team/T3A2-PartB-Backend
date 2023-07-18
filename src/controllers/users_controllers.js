@@ -104,29 +104,24 @@ const login = async (request, response) => {
 }
 
 // Endpoint for sending out password reset email
-const passwordResetEmail = async (request, response) => {
+const sendEmail = async (email, text, subject, response) => {
     try{
-    const user = await User.findOne({email: request.body.email})
 
-    // Create a transporter object
-    const transporter = nodemailer.createTransport({
-    service: 'Gmail',
-    auth: {
-      user: 'remann12@gmail.com',
-      pass: process.env.EMAIL_PASSWORD
-    }
-  });
+        // Create a transporter object
+        const transporter = nodemailer.createTransport({
+            service: 'Gmail',
+            auth: {
+                user: 'remann12@gmail.com',
+                pass: process.env.EMAIL_PASSWORD
+            }
+        });
 
-    if (user) {
-        // Set up email data if the user with supplied email exists
-        // Creating token, only valid for an hour, for the purpose of validating the user when using the link
-        const token = createToken(user._id, user.email, '1h')
+        // Set up email data if the user with supplied email
         const mailOptions = {
             from: 'remann12@gmail.com',
-            to: user.email,
-            subject: 'Password reset link',
-            // Link will contain a valid token and user id for added security
-            text: `Testing the email sending process \n http://localhost:3000/password-reset/${token}/${user._id}`
+            to: email,
+            subject: subject,
+            text: text
         };
 
         transporter.sendMail(mailOptions, (error, info) => {
@@ -139,7 +134,24 @@ const passwordResetEmail = async (request, response) => {
             }
           });
     
+    } catch(error) {
+        response.status(500).json({ error: error.message })
+    }
+}
 
+const passwordResetEmail = async (request, response) => {
+    try{
+    const user = await User.findOne({email: request.body.email})
+
+    if (user) {
+        // Creating token, only valid for an hour, for the purpose of validating the user when using the link
+        const token = createToken(user._id, user.email, '1h')
+        const resetLink = `http://localhost:3000/password-reset/${token}/${user._id}`
+        const subject = 'Minima-List Password Reset'
+        const text = `Please use the following link to reset your password \n ${resetLink}`
+
+        await sendEmail(user.email, text, subject, response)
+    
     } else {
         response.status(404).json({error: "User not found"})
     }
@@ -147,6 +159,18 @@ const passwordResetEmail = async (request, response) => {
         response.status(500).json({ error: error.message })
     }
 }
+
+const inviteUserEmail = async (request, response) => {
+    try {
+      const email = request.body.email;
+      const subject = 'Invitation to Minima-List';
+      const text = 'Here is your invitation to join';
+  
+      await sendEmail(email, text, subject, response);
+    } catch (error) {
+      response.status(500).json({ error: error.message });
+    }
+  };
 
 // Endpoint for checking validations when the user uses the password reset link to enter the reset page
 const passwordResetPage = async (request, response) => {
