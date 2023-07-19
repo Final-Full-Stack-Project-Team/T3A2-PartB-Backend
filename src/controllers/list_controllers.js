@@ -121,7 +121,7 @@ const deleteList = async (request, response) => {
     }
 }
 
-// End point for modifying list name and any other data that is not relating to users
+// End point for adding items, modifying list name and any other data that is not relating to users
 const modifyList = async (request, response) => {
     try {
         const list = await List.findByIdAndUpdate(request.params._id, request.body, {new: true})
@@ -129,6 +129,7 @@ const modifyList = async (request, response) => {
             response.status(404).json({ error: "List not found" })
             return
         }
+        // Logic to stop users being modified in this endpoint
         if (request.body.hasOwnProperty('shared_with')) {
             response.status(500).json({ error: "Cannot edit users here" })
             return
@@ -139,6 +140,7 @@ const modifyList = async (request, response) => {
     }
 }
 
+// Endpoint for adding a new user to the list
 const addUserToList = async (request, response) => {
     try {
         // declare user and list
@@ -153,16 +155,20 @@ const addUserToList = async (request, response) => {
             response.status(404).json({ error: "List not found" })
         }
 
+        // Spread syntax to get an array with the current users in the list
         const usersInList = [...list.shared_with]
 
+        // Checks if the user is already in the list
         const checkIfExistingUser = usersInList.some((userId) => userId.equals(request.body.shared_with));
         if (checkIfExistingUser) {
             response.status(400).json({ error: "User is already in this list" })
             return
         }
 
+        // Push new user into the array of current users
         usersInList.push(request.body.shared_with)
 
+        // Update document using the updated users array
         const updatedList = await List.findByIdAndUpdate(request.params._id, {shared_with: usersInList}, {new: true})
         
         response.status(200).send(updatedList)
@@ -238,6 +244,47 @@ const removeUserFromList = async (request, response) => {
     }
 }
 
+// Enpoint to remove items from list
+const removeItemFromList = async (request, response) => {
+    try {
+        const item = request.body.items
+        const list = await List.findById(request.params._id)
+
+        if (!item) {
+            response.status(404).json({ error: "Item not found" })
+            return
+        }
+
+        if (!list) {
+            response.status(404).json({ error: "List not found" })
+            return
+        }
+
+        // Checking for an data that is not an item in the request body
+        const additionalFields = Object.keys(request.body).filter(field => !'items'.includes(field));
+        // If any found, return an error
+        if (additionalFields.length > 0) {
+            response.status(400).json({ error: "Invalid fields in the request body" });
+            return;
+        }
+
+        // Update the document
+        await List.updateMany(
+            {_id: request.params._id},
+            { $pull: {items: { $in: item } } }
+        )
+        // Create new instance of the updated list
+        const updatedList = await List.findById(request.params._id)
+        // Send updated list
+        response.status(200).send(updatedList)
+
+    } catch(error) {
+        response.status(500).json({
+            error: error.message
+        })
+    }
+}
+
 module.exports = {
     getList,
     getAllLists,
@@ -245,5 +292,6 @@ module.exports = {
     deleteList,
     modifyList,
     addUserToList,
-    removeUserFromList
+    removeUserFromList,
+    removeItemFromList
 }
