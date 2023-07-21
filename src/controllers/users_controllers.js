@@ -47,37 +47,45 @@ const getAllUsers = async (request, response) => {
 // Endpoint for a user sign up
 const signup = async (request, response) => {
     try {
-            // Creating the user object
-            let newUser = new User({
-                email: request.body.email,
-                password: bcrypt.hashSync(
-                    request.body.password,
-                    bcrypt.genSaltSync(10)
-                ),
-                name: request.body.name
-            })
-            // Checking the user email for any existing ones, to then respond with a custom error message
-            const existingUser = await User.findOne({ email: newUser.email })
-            if (existingUser) {
-                response.status(409).json({ error: "User with that email already exists" })
-                return
-            }
-            await newUser.save()
+        // Creating the user object
+        const { email, password, name } = request.body;
 
-            // Creating a token using the userid and email with a 7 day expiry
-            const token = createToken(newUser._id, newUser.email, '7d')
+        // Password validation using regular expressions
+        const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+        if (!passwordRegex.test(password)) {
+            return response.status(400).json({
+                error: "Password contain at least 8 characters, a capital letter, and a number."
+            });
+        }
 
-            // Responding with id, name and the token 
-            response.json({
-                _id: newUser._id,
-                name: newUser.name,
-                token: token
-            })
-    
-    } catch(error) {
-        response.status(500).json({ error: error.message })
+        let newUser = new User({
+            email: email,
+            password: bcrypt.hashSync(password, bcrypt.genSaltSync(10)),
+            name: name
+        });
+
+        // Checking the user email for any existing ones, to then respond with a custom error message
+        const existingUser = await User.findOne({ email: newUser.email });
+        if (existingUser) {
+            response.status(409).json({ error: "User with that email already exists" });
+            return;
+        }
+        await newUser.save();
+
+        // Creating a token using the userid and email with a 7 day expiry
+        const token = createToken(newUser._id, newUser.email, '7d');
+
+        // Responding with id, name, and the token
+        response.json({
+            _id: newUser._id,
+            email: newUser.email,
+            name: newUser.name,
+            token: token
+        });
+    } catch (error) {
+        response.status(500).json({ error: error.message });
     }
-}
+};
 
 // Endpoint for logging in
 const login = async (request, response) => {
