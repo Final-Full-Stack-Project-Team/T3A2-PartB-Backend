@@ -9,9 +9,17 @@ const Group = mongoose.model('Groups', {
     },
     dateCreated: Date,
     // Foreign object of groups that belong to users
-    group_members: [{ type: mongoose.Types.ObjectId, ref: 'User' }], 
+    group_members: [{ 
+        type: mongoose.Types.ObjectId, 
+        ref: 'User',
+        required: true
+    }], 
     
-    created_by: {type: mongoose.Types.ObjectId, ref: 'User'}
+    created_by: {
+        type: mongoose.Types.ObjectId, 
+        ref: 'User',
+        required: true
+    }
 });
 
 // Export the Group model to be used in other modules

@@ -30,9 +30,20 @@ const getGroup = async (request, response) => {
 // Function to create a new group
 const createGroup = async (request, response) => {
     try {
-        // Assuming you have the user who created the group and the group members in the request body
+        
         const { group_name, group_members, created_by } = request.body;
+        // Check if the required fields are empty or missing
+        if (!group_name || group_name === " ") {
+            return response.status(400).json({ error: 'Cannot create Group. A Group name is required' });
+        }
 
+        if (!group_members || group_members === " ") {
+            return response.status(400).json({ error: 'Cannot create Group. At least one Group member is required' });
+        }
+
+        if (!created_by || created_by === " ") {
+            return response.status(400).json({ error: 'Cannot create Group. A Group creator is required' });
+        }
         // Create a new group object based on the request body
         let newGroup = new Group({
             group_name: group_name,
