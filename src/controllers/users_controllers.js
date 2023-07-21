@@ -50,13 +50,21 @@ const signup = async (request, response) => {
         // Creating the user object
         const { email, password, name } = request.body;
 
-        // Password validation using regular expressions
-        const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
-        if (!passwordRegex.test(password)) {
+        // Password validation
+        const passwordValidation = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+        if (!passwordValidation.test(password)) {
             return response.status(400).json({
                 error: "Password contain at least 8 characters, a capital letter, and a number."
             });
         }
+
+         // Email validation
+         const emailValidation = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+         if (!emailValidation.test(email)) {
+             return response.status(400).json({
+                 error: "Invalid email format."
+             });
+         }
 
         let newUser = new User({
             email: email,
