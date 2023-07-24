@@ -86,11 +86,14 @@ app.get('/', (request, response) => {
     });
 });
 
-const groupsRouter = require('./routes/groups_routes')
-app.use("/groups", groupsRouter)
-
 const userRouter = require('./routes/user_routes.js')
 app.use('/users', userRouter)
+
+const { validateRequest } = require('./middlewares/auth_middleware.js')
+app.use(validateRequest)
+
+const groupsRouter = require('./routes/groups_routes')
+app.use("/groups", groupsRouter)
 
 const listRouter = require('./routes/list_routes.js')
 app.use('/lists', listRouter)
