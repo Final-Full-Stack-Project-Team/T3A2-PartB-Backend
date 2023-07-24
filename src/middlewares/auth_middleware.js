@@ -9,6 +9,7 @@ const validateRequest = (request, response, next) => {
                 return
             }
             const decoded = verifyToken(token)
+            request.decodedId = decoded.user_id
             return next()
         } else {
             response.json({ error: "You are not authenticated for this page" })

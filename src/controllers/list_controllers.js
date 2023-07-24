@@ -4,13 +4,17 @@ const User = require('../models/user_model.js')
 // Endpoint to find a single list
 const getList = async (request, response) => {
     try {
+        const userId = request.decodedId
         //Find the list by id from the url parameter
-        let list = await List.findById(request.params._id)
+        let list = await List.findOne({
+            _id: request.params._id,
+            $or: [{admin: userId}, {shared_with: userId}]
+        })
         // If list is found, send the list as response
         if (list) {
             response.send(list)
         // Else throw error if list not found
-        } else if (!list) {
+        } else {
             response.status(404).json({error: "List not found"})
             return
         }
@@ -32,7 +36,14 @@ const getList = async (request, response) => {
 // Endpoint to return all lists found
 const getAllLists = async (request, response) => {
     try {
-        let lists = await List.find()
+        const userId = request.decodedId
+        const lists = await List.find({
+            $or: [
+              { admin: userId }, // Lists where the 'admin' field matches the 'userId'
+              { shared_with: userId }, // Lists where the 'shared_with' array contains the 'userId'
+            ],
+          });
+        
         response.send(lists)
 
     } catch(error) {
@@ -149,10 +160,12 @@ const addUserToList = async (request, response) => {
 
         if (!user) {
             response.status(404).json({ error: "User not found" })
+            return
         }
 
         if (!list) {
             response.status(404).json({ error: "List not found" })
+            return
         }
 
         // Spread syntax to get an array with the current users in the list
