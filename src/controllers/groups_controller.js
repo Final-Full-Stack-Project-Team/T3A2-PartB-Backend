@@ -1,6 +1,7 @@
 const { response } = require('express');
 const Group = require('../models/groups_model');
 const User = require('../models/user_model');
+const mongoose = require('mongoose');
 
 // Function to get all groups 
 const getGroups = async (request, response) => {
@@ -18,11 +19,11 @@ const getGroup = async (request, response) => {
             response.status(404)
         });
     if (group) {
-        // If the group is successfully deleted, send a JSON response with a success message
+        // If the group is successfully retrived
         response.json(group);
     } else {
-        // If the group deletion fails (due to invalid ID), send a JSON response with an error message
-        response.json({ message: "Could not find ID." });
+        // If the group ID is invalid
+        response.json({ message: "Could not find Group ID." });
     };
 };
 
@@ -43,17 +44,17 @@ const createGroup = async (request, response) => {
             return response.status(400).json({ error: 'Cannot create Group. At least one Group member is required' });
         }
 
-        // If Group members is left empty or consists of only white space(s)
+        // If the Group's creator is left empty or consists of only white space(s)
         if (created_by.trim() === "") {
             return response.status(400).json({ error: 'Cannot create Group. A Group creator is required' });
         }
-        
+
         // Create a new group object based on the request body
         let newGroup = new Group({
             group_name: group_name,
             dateCreated: new Date(),
             group_members: group_members,
-            created_by: created_by // Assuming the 'created_by' field is an ObjectId referencing the user collection
+            created_by: created_by
         });
 
         // Save the new group to the database
@@ -62,8 +63,9 @@ const createGroup = async (request, response) => {
         // Respond with the newly created group
         response.json(newGroup);
     } catch (error) {
-        // Handle errors appropriately
-        response.status(500).json({ error: 'Internal Server Error' });
+        // If any errors occur
+        console.log("Error while creating group:\n", error);
+        response.status(500).json({ error: 'An error has occured' });
     }
 };
 
@@ -99,8 +101,9 @@ const updateGroup = async (request, response) => {
             response.json({ message: "Cannot edit Group. Could not find ID." });
         }
     } catch (error) {
-        // Handle errors appropriately
-        response.status(500).json({ error: 'Internal Server Error' });
+        // If any errors occur
+        console.log("Error while updadaing group:\n", error);
+        response.status(500).json({ error: 'An error has occured' });
     }
 };
 
@@ -127,21 +130,27 @@ const deleteAllGroups = async (request, response) => {
 };
 
 const deleteGroup = async (request, response) => {
-    // Attempt to find and delete the group with the specified ID
-    deleteSingleGroup = await Group.findByIdAndDelete(request.params.id)
-        .catch(error => {
-            // Log an error message if the deletion fails due to an invalid ID
-            console.log("Cannot delete. Could not find ID. Error:\n" + error);
-            // Set the response status to 404 (Not Found)
-            response.status(404);
-        });
-    if (deleteSingleGroup) {
-        // If the group is successfully deleted, send a JSON response with a success message
-        response.json({ message: "Group deleted." });
-    } else {
-        // If the group deletion fails (due to invalid ID), send a JSON response with an error message
-        response.json({ message: "Cannot delete. Could not find ID." });
-    };
+    try {
+        const groupId = request.params.id;
+        // Check if the provided ID is a valid MongoDB ObjectID
+        if (!mongoose.Types.ObjectId.isValid(groupId)) {
+            return response.status(400).json({ error: 'Cannot delete. Group cannot be found.' });
+        }
+        // Attempt to find and delete the group with the specified ID
+        const deleteSingleGroup = await Group.findByIdAndDelete(groupId);
+
+        if (deleteSingleGroup) {
+            // If the group is successfully deleted
+            response.json({ message: "Group deleted." });
+        } else {
+            // If the group deletion fails due to invalid ID
+            response.status(404).json({ message: "Cannot delete. Group cannot be found." });
+        }
+    } catch (error) {
+        // Log an error message if the deletion fails due to any other error
+        console.log("Error while deleting group:\n", error);
+        response.status(500).json({ error: 'An error has occurred' });
+    }
 };
 
 // Export the functions to be used in other modules
