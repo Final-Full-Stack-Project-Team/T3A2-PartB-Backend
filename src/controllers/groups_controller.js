@@ -30,20 +30,24 @@ const getGroup = async (request, response) => {
 // Function to create a new group
 const createGroup = async (request, response) => {
     try {
-        
+         // Check if the required fields are empty or missing
         const { group_name, group_members, created_by } = request.body;
-        // Check if the required fields are empty or missing
-        if (!group_name || group_name === " ") {
-            return response.status(400).json({ error: 'Cannot create Group. A Group name is required' });
+       
+        // If Group name is empty or consists of only white space(s)
+        if (group_name.trim() === "") {
+            return response.status(400).json({ error: 'Cannot create Group. Group name cannot be empty' });
         }
 
-        if (!group_members || group_members === " ") {
+        // If Group members is left empty or consists of only white space(s)
+        if (!Array.isArray(group_members) || group_members.length === 0 || group_members.every(member => member === "")) {
             return response.status(400).json({ error: 'Cannot create Group. At least one Group member is required' });
         }
 
-        if (!created_by || created_by === " ") {
+        // If Group members is left empty or consists of only white space(s)
+        if (created_by.trim() === "") {
             return response.status(400).json({ error: 'Cannot create Group. A Group creator is required' });
         }
+        
         // Create a new group object based on the request body
         let newGroup = new Group({
             group_name: group_name,
@@ -64,20 +68,40 @@ const createGroup = async (request, response) => {
 };
 
 const updateGroup = async (request, response) => {
-    let updatedGroup = await Group.findByIdAndUpdate(request.params.id, request.body, {new: true})
-        .catch(error => {
-            // Log an error message if the deletion fails due to an invalid ID
-            console.log("Cannot edit Group. Could not find ID. Error:\n" + error);
-            // Set the response status to 404 (Not Found)
-            response.status(404);
-        });
-    if (updatedGroup) {
-        // If the group is successfully updated, send a JSON response with a success message and the updated data
-        response.send (updatedGroup);
-    } else {
-    // If the group update fails (due to invalid ID), send a JSON response with an error message
-        response.json({ message: "Cannot edit Group. Could not find ID." });
-    };   
+    try {
+        // Check if the required fields are empty or missing
+        const { group_name, group_members} = request.body;
+
+        // If group_name is provided, check if it's empty
+        if (group_name !== undefined && group_name.trim() === "") {
+            return response.status(400).json({ error: 'Cannot edit Group. Group name cannot be empty' });
+        }
+
+        // If group_members is provided, check if it's an empty array
+        if (group_members !== undefined && (!Array.isArray(group_members) || group_members.length === 0 || group_members.every(member => member === ""))) {
+            return response.status(400).json({ error: 'Cannot edit Group. At least one Group member is required' });
+        }
+
+        // Proceed with updating the group if the required fields are valid
+        let updatedGroup = await Group.findByIdAndUpdate(request.params.id, request.body, { new: true })
+            .catch(error => {
+                // Log an error message if the update fails due to an invalid ID
+                console.log("Cannot edit Group. Could not find ID. Error:\n" + error);
+                // Set the response status to 404 (Not Found)
+                response.status(404);
+            });
+
+        if (updatedGroup) {
+            // If the group is successfully updated, send a JSON response with a success message and the updated data
+            response.json(updatedGroup);
+        } else {
+            // If the group update fails (due to invalid ID), send a JSON response with an error message
+            response.json({ message: "Cannot edit Group. Could not find ID." });
+        }
+    } catch (error) {
+        // Handle errors appropriately
+        response.status(500).json({ error: 'Internal Server Error' });
+    }
 };
 
 // Function to delete all groups
