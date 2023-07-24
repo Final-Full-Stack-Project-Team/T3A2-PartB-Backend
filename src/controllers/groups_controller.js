@@ -32,10 +32,21 @@ const getGroup = async (request, response) => {
 const createGroup = async (request, response) => {
     try {
         
-        const { group_name, shared_with, admin } = request.body;
+        // Admin gets passed in the json body
+        const admin = await User.findById(request.body.admin)
+        // Array of users passed in the json body
+        const shared_with = request.body.shared_with
+
+        // Looking for users in DB from the id's passed into the users array
+        const existingUsers = await User.find({ _id: { $in: shared_with } });
+        // If the length of users is not equal to the existing users
+        // Then one or more users were not found in the database
+        if (existingUsers.length !== shared_with.length || !admin) {
+          return response.status(404).json({ error: 'One or more users not found' });
+        } 
        
         // If Group name is empty or consists of only white space(s)
-        if (group_name.trim() === "") {
+        if (request.body.group_name.trim() === "") {
             return response.status(400).json({ error: 'Cannot create Group. Group name cannot be empty' });
         }
 
@@ -45,7 +56,7 @@ const createGroup = async (request, response) => {
         }
 
         // If the Group's admin/creator is left empty or consists of only white space(s)
-        if (admin.trim() === "") {
+        if (request.body.admin.trim() === "") {
             return response.status(400).json({ error: 'Cannot create Group. A Group admin is required' });
         }
 
@@ -63,14 +74,24 @@ const createGroup = async (request, response) => {
 
         // Create a new group object based on the request body
         let newGroup = new Group({
-            group_name: group_name,
+            group_name: request.body.group_name,
             dateCreated: new Date(),
             shared_with: shared_with,
-            admin: admin
+            admin: admin._id
         });
 
         // Save the new group to the database
         await newGroup.save();
+
+        // Pushing the new list to each existing user
+        existingUsers.forEach(async (user) => {
+            user.groups.push(newGroup._id);
+            await user.save()
+        })
+
+        // Pushing list to the admin user too
+        admin.groups.push(newGroup._id)
+        await admin.save()
 
         // Respond with the newly created group
         response.json(newGroup);
@@ -129,24 +150,38 @@ const updateGroup = async (request, response) => {
 
 // Function to delete all groups
 const deleteAllGroups = async (request, response) => {
-    // Get the count of groups before deletion
-    const groupCount = await Group.countDocuments({});
+    try {
+        // Get all groups before deletion
+        const groupsToDelete = await Group.find({});
+        const groupCount = groupsToDelete.length;
 
-    // Delete all groups from the database
-    await Group.deleteMany({});
+        // Delete all groups from the database
+        await Group.deleteMany({});
 
-    // Create the message with the count of deleted groups
-    let message = "";
-    if (groupCount === 0) {
-        message = "There are no groups to delete"
-    } else { // use plural to display message if the groupCount is not 1
-        message = `Deletion successful. ${groupCount} group${groupCount !== 1 ? 's' : ''} deleted.`
-    };
+        // Delete the associated groups from users
+        const groupIds = groupsToDelete.map(group => group._id);
+        await User.updateMany(
+            { groups: { $in: groupIds } },
+            { $pullAll: { groups: groupIds } }
+        );
 
-    // Send a JSON response indicating that all groups have been deleted
-    response.json({
-        "message": message
-    });
+        // Create the message with the count of deleted groups
+        let message = "";
+        if (groupCount === 0) {
+            message = "There are no groups to delete";
+        } else { // use plural to display message if the groupCount is not 1
+            message = `Deletion successful. ${groupCount} group${groupCount !== 1 ? 's' : ''} deleted.`;
+        }
+
+        // Send a JSON response indicating that all groups have been deleted
+        response.json({
+            "message": message
+        });
+    } catch (error) {
+        // Log an error message if the deletion fails due to any other error
+        console.log("Error while deleting groups:\n", error);
+        response.status(500).json({ error: 'An error has occurred' });
+    }
 };
 
 const deleteGroup = async (request, response) => {
@@ -158,6 +193,10 @@ const deleteGroup = async (request, response) => {
         }
         // Attempt to find and delete the group with the specified ID
         const deleteSingleGroup = await Group.findByIdAndDelete(groupId);
+
+        await User.updateMany(
+            {groups: groupId},
+            { $pull: {groups: groupId}})
 
         if (deleteSingleGroup) {
             // If the group is successfully deleted
