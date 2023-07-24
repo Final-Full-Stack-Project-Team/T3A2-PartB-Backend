@@ -49,6 +49,18 @@ const createGroup = async (request, response) => {
             return response.status(400).json({ error: 'Cannot create Group. A Group creator is required' });
         }
 
+        // Check if the created_by user ID exists
+        const createdByUser = await User.findById(created_by);
+        if (!createdByUser) {
+            return response.status(400).json({ error: 'Cannot create Group. Invalid user ID for the creator' });
+        }
+
+        // Check if all group_members user IDs exist
+        const existingGroupMembers = await User.find({ _id: { $in: group_members } });
+        if (existingGroupMembers.length !== group_members.length) {
+            return response.status(400).json({ error: 'Cannot create Group. Invalid user ID(s) in group_members' });
+        }
+
         // Create a new group object based on the request body
         let newGroup = new Group({
             group_name: group_name,
@@ -82,6 +94,14 @@ const updateGroup = async (request, response) => {
         // If group_members is provided, check if it's an empty array
         if (group_members !== undefined && (!Array.isArray(group_members) || group_members.length === 0 || group_members.every(member => member === ""))) {
             return response.status(400).json({ error: 'Cannot edit Group. At least one Group member is required' });
+        }
+
+        // Check if all group_members user IDs exist
+        if (group_members !== undefined) {
+            const existingGroupMembers = await User.find({ _id: { $in: group_members } });
+            if (existingGroupMembers.length !== group_members.length) {
+                return response.status(400).json({ error: 'Cannot edit Group. Invalid user ID(s) in group_members' });
+            }
         }
 
         // Proceed with updating the group if the required fields are valid
