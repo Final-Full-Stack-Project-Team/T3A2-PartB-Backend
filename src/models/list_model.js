@@ -10,10 +10,15 @@ const ListSchema = new mongoose.Schema({
     isCompleted: Boolean,
 
     // Referencing the items collection
-    items: [{ type: mongoose.Types.ObjectId, ref: 'Item' }],
+    items: [{ 
+        type: mongoose.Types.ObjectId, 
+        ref: 'Item' }],
 
     // Referencing the users collection
-    shared_with: [{ type: mongoose.Types.ObjectId, ref: 'User' }],
+    shared_with: [{ 
+        type: mongoose.Types.ObjectId, 
+        ref: 'User' 
+    }],
     // Referencing a user as the admin of the list
     admin: {
         type: mongoose.Types.ObjectId,

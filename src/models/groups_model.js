@@ -9,13 +9,13 @@ const Group = mongoose.model('Groups', {
     },
     dateCreated: Date,
     // Foreign object of groups that belong to users
-    group_members: [{ 
+    shared_with: [{ 
         type: mongoose.Types.ObjectId, 
         ref: 'User',
         required: true
     }], 
     
-    created_by: {
+    admin: {
         type: mongoose.Types.ObjectId, 
         ref: 'User',
         required: true

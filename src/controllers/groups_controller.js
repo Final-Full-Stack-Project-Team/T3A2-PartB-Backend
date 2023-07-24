@@ -31,42 +31,42 @@ const getGroup = async (request, response) => {
 // Function to create a new group
 const createGroup = async (request, response) => {
     try {
-         // Check if the required fields are empty or missing
-        const { group_name, group_members, created_by } = request.body;
+        
+        const { group_name, shared_with, admin } = request.body;
        
         // If Group name is empty or consists of only white space(s)
         if (group_name.trim() === "") {
             return response.status(400).json({ error: 'Cannot create Group. Group name cannot be empty' });
         }
 
-        // If Group members is left empty or consists of only white space(s)
-        if (!Array.isArray(group_members) || group_members.length === 0 || group_members.every(member => member === "")) {
+        // If shared_with is left empty or consists of only white space(s)
+        if (!Array.isArray(shared_with) || shared_with.length === 0 || shared_with.every(member => member === "")) {
             return response.status(400).json({ error: 'Cannot create Group. At least one Group member is required' });
         }
 
-        // If the Group's creator is left empty or consists of only white space(s)
-        if (created_by.trim() === "") {
-            return response.status(400).json({ error: 'Cannot create Group. A Group creator is required' });
+        // If the Group's admin/creator is left empty or consists of only white space(s)
+        if (admin.trim() === "") {
+            return response.status(400).json({ error: 'Cannot create Group. A Group admin is required' });
         }
 
-        // Check if the created_by user ID exists
-        const createdByUser = await User.findById(created_by);
-        if (!createdByUser) {
-            return response.status(400).json({ error: 'Cannot create Group. Invalid user ID for the creator' });
+        // Check if the admin ID exists
+        const adminUser = await User.findById(admin);
+        if (!adminUser) {
+            return response.status(400).json({ error: 'Cannot create Group. Invalid user ID for the admin' });
         }
 
-        // Check if all group_members user IDs exist
-        const existingGroupMembers = await User.find({ _id: { $in: group_members } });
-        if (existingGroupMembers.length !== group_members.length) {
-            return response.status(400).json({ error: 'Cannot create Group. Invalid user ID(s) in group_members' });
+        // Check if all shared_with users ID's exist
+        const existingGroupMembers = await User.find({ _id: { $in: shared_with } });
+        if (existingGroupMembers.length !== shared_with.length) {
+            return response.status(400).json({ error: 'Cannot create Group. Invalid user ID(s) in shared_with' });
         }
 
         // Create a new group object based on the request body
         let newGroup = new Group({
             group_name: group_name,
             dateCreated: new Date(),
-            group_members: group_members,
-            created_by: created_by
+            shared_with: shared_with,
+            admin: admin
         });
 
         // Save the new group to the database
@@ -84,7 +84,7 @@ const createGroup = async (request, response) => {
 const updateGroup = async (request, response) => {
     try {
         // Check if the required fields are empty or missing
-        const { group_name, group_members} = request.body;
+        const { group_name, shared_with} = request.body;
 
         // If group_name is provided, check if it's empty
         if (group_name !== undefined && group_name.trim() === "") {
@@ -92,14 +92,14 @@ const updateGroup = async (request, response) => {
         }
 
         // If group_members is provided, check if it's an empty array
-        if (group_members !== undefined && (!Array.isArray(group_members) || group_members.length === 0 || group_members.every(member => member === ""))) {
+        if (shared_with !== undefined && (!Array.isArray(shared_with) || shared_with.length === 0 || shared_with.every(member => member === ""))) {
             return response.status(400).json({ error: 'Cannot edit Group. At least one Group member is required' });
         }
 
         // Check if all group_members user IDs exist
-        if (group_members !== undefined) {
-            const existingGroupMembers = await User.find({ _id: { $in: group_members } });
-            if (existingGroupMembers.length !== group_members.length) {
+        if (shared_with !== undefined) {
+            const existingGroupMembers = await User.find({ _id: { $in: shared_with } });
+            if (existingGroupMembers.length !== shared_with.length) {
                 return response.status(400).json({ error: 'Cannot edit Group. Invalid user ID(s) in group_members' });
             }
         }
