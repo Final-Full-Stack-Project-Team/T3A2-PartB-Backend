@@ -22,7 +22,7 @@ const getGroup = async (request, response) => {
         response.json(group);
     } else {
         // If the group deletion fails (due to invalid ID), send a JSON response with an error message
-        response.json({ message: "Cannot delete. Could not find ID." });
+        response.json({ message: "Could not find ID." });
     };
 };
 
