@@ -13,7 +13,8 @@ const getUser = async (request, response) => {
             const userData = {
                 _id: user._id,
                 name: user.name,
-                lists: user.lists
+                lists: user.lists,
+                groups: user.groups
             }
             response.send(userData)
         } else {
@@ -36,7 +37,7 @@ const getAllUsers = async (request, response) => {
         let users = await User.find()
         
         // Only sending non sensitive data
-        const userData = users.map(({name, email, lists, _id}) => ({name, email, lists, _id}))
+        const userData = users.map(({name, email, lists, groups, _id}) => ({name, email, lists, groups, _id}))
         response.send(userData)
 
     } catch(error) {
