@@ -59,6 +59,7 @@ const signup = async (request, response) => {
             });
         }
 
+
          // Email validation
          const emailValidation = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
          if (!emailValidation.test(email)) {
@@ -93,6 +94,7 @@ const signup = async (request, response) => {
         });
     } catch (error) {
         response.status(500).json({ error: error.message });
+
     }
 };
 
@@ -108,7 +110,9 @@ const login = async (request, response) => {
                 // returning the user id, name and token
                 data: {
                     _id: user._id,
-                    name: user.name
+                    name: user.name,
+                    lists: user.lists,
+                    groups: user.groups
                 },
                 token: token
             })
