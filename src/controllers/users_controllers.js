@@ -19,12 +19,12 @@ const getUser = async (request, response) => {
             response.send(userData)
         } else {
             // Otherwise, error response
-            response.status(404).json({ error: "User not found" })
+            response.status(404).json({ error: "User not found." })
             return
         }
     } catch(error) {
         if (error.name === "CastError" && error.kind === "ObjectId") {
-            response.status(404).json({ error: "User not found" })
+            response.status(404).json({ error: "User not found." })
         } else {
             response.status(500).json({ error: error.message })
         }
@@ -51,22 +51,21 @@ const signup = async (request, response) => {
         // Creating the user object
         const { email, password, name } = request.body;
 
-        // Password validation
-        const passwordValidation = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
-        if (!passwordValidation.test(password)) {
-            return response.status(400).json({
-                error: "Password contain at least 8 characters, a capital letter, and a number."
-            });
-        }
-
-
          // Email validation
          const emailValidation = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
          if (!emailValidation.test(email)) {
              return response.status(400).json({
-                 error: "Invalid email format."
+                 error: "The email address you have provided is not a valid format."
              });
          }
+
+         // Password validation
+        const passwordValidation = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+        if (!passwordValidation.test(password)) {
+            return response.status(400).json({
+                error: "Password must contain at least 8 characters, a capital letter, and a number."
+            });
+        }
 
         let newUser = new User({
             email: email,
@@ -77,7 +76,7 @@ const signup = async (request, response) => {
         // Checking the user email for any existing ones, to then respond with a custom error message
         const existingUser = await User.findOne({ email: newUser.email });
         if (existingUser) {
-            response.status(409).json({ error: "User with that email already exists" });
+            response.status(409).json({ error: "A user with that email address already exists." });
             return;
         }
         await newUser.save();
@@ -117,7 +116,7 @@ const login = async (request, response) => {
                 token: token
             })
         } else {
-            response.status(401).json({ error: "Invalid email or password" })
+            response.status(401).json({ error: "Incorrect email address or password." })
             return
         }
     } catch (error) {
@@ -242,17 +241,17 @@ const passwordResetForm = async (request, response) => {
 
         // Error thrown if user id from url params does not exist
         if (!user) {
-            response.status(404).json({ error: "User not found" })
+            response.status(404).json({ error: "User not found." })
             return
         }
 
         response.json({
-            message: "Password has been successfully changed"
+            message: "Password has been successfully changed."
         })
 
     } catch(error) {
         if (error.name === "CastError" && error.kind === "ObjectId") {
-            response.status(404).json({ error: "User not found" })
+            response.status(404).json({ error: "User not found." })
         } else {
             response.status(500).json({ error: error.message })
         }
