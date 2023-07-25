@@ -72,7 +72,9 @@ const signup = async (request, response) => {
             response.json({
                 _id: newUser._id,
                 name: newUser.name,
-                token: token
+                token: token,
+                lists: newUser.lists,
+                groups: newUser.groups
             })
     
     } catch(error) {
@@ -92,7 +94,9 @@ const login = async (request, response) => {
                 // returning the user id, name and token
                 data: {
                     _id: user._id,
-                    name: user.name
+                    name: user.name,
+                    lists: user.lists,
+                    groups: user.groups
                 },
                 token: token
             })
