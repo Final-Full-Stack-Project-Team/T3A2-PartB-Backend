@@ -3,29 +3,55 @@ const Group = require('../models/groups_model');
 const User = require('../models/user_model');
 const mongoose = require('mongoose');
 
-// Function to get all groups 
 const getGroups = async (request, response) => {
-    // Fetch all groups from the database
-    let groups = await Group.find()
-    // Send the groups as a response
-    response.send(groups)
-};
+    try {
+      const userId = request.decodedId; // Assuming this is the user's ID obtained from the decoded token
+      const groups = await Group.find({
+        $or: [{ admin: userId }, { shared_with: userId }],
+      })
+      .populate({
+        path: 'shared_with',
+        select: 'name -_id' // Include only the 'name' property and exclude the '_id' property
+      })
+      .populate({
+        path: 'admin',
+        select: 'name -_id' // Include only the 'name' property and exclude the '_id' property
+      })
+      .lean(); // Use lean() to return plain JavaScript objects
+  
+      response.send(groups);
+    } catch (error) {
+      console.log("Error while fetching groups:\n", error);
+      response.status(500).json({ error: 'An error has occurred' });
+    }
+  };
+  
 
-// Function to get a single group by id 
 const getGroup = async (request, response) => {
-    let group = await Group.findById(request.params.id)
-        .catch(error => {
-            console.log("Could not find id. Error:\n" + error)
-            response.status(404)
-        });
-    if (group) {
-        // If the group is successfully retrived
+    try {
+      const groupId = request.params.id;
+      const group = await Group.findById(groupId)
+        .populate({
+          path: 'shared_with',
+          select: 'name -_id' // Include only the 'name' property and exclude the '_id' property
+        })
+        .populate({
+          path: 'admin',
+          select: 'name -_id' // Include only the 'name' property and exclude the '_id' property
+        })
+        .lean(); // Use lean() to return plain JavaScript objects
+  
+      if (group) {
         response.json(group);
-    } else {
-        // If the group ID is invalid
-        response.json({ message: "Could not find Group ID." });
-    };
-};
+      } else {
+        response.status(404).json({ message: "Group not found" });
+      }
+    } catch (error) {
+      console.log("Error while fetching group:\n", error);
+      response.status(500).json({ error: 'An error has occurred' });
+    }
+  };
+  
 
 
 // Function to create a new group
