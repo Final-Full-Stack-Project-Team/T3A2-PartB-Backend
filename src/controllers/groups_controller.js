@@ -12,7 +12,7 @@ const getGroups = async (request, response) => {
       })
       .populate({
         path: 'shared_with',
-        select: 'name -_id' // Include only the 'name' property and exclude the '_id' property
+        select: 'email -_id' // Include only the 'name' property and exclude the '_id' property
       })
       .populate({
         path: 'admin',
@@ -34,7 +34,7 @@ const getGroup = async (request, response) => {
       const group = await Group.findById(groupId)
         .populate({
           path: 'shared_with',
-          select: 'name -_id' // Include only the 'name' property and exclude the '_id' property
+          select: 'email -_id' // Include only the 'name' property and exclude the '_id' property
         })
         .populate({
           path: 'admin',
