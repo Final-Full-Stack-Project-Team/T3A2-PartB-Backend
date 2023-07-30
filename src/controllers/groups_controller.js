@@ -2,6 +2,7 @@ const { response } = require('express');
 const Group = require('../models/groups_model');
 const User = require('../models/user_model');
 const mongoose = require('mongoose');
+const { verifyToken } = require('../services/auth_services.js')
 
 const getGroups = async (request, response) => {
     try {
@@ -57,20 +58,20 @@ const getGroup = async (request, response) => {
 // Function to create a new group
 const createGroup = async (request, response) => {
     try {
-        
-        // Admin gets passed in the json body
-        const admin = await User.findById(request.body.admin)
-        // Array of users passed in the json body
-        const shared_with = request.body.shared_with
+        // Extract the user ID of the admin from the decoded token
+        const adminId = request.decodedId;
 
-        // Looking for users in DB from the id's passed into the users array
+        // Array of users passed in the json body
+        const shared_with = request.body.shared_with;
+
+        // Looking for users in DB from the ids passed into the users array
         const existingUsers = await User.find({ _id: { $in: shared_with } });
         // If the length of users is not equal to the existing users
         // Then one or more users were not found in the database
-        if (existingUsers.length !== shared_with.length || !admin) {
-          return response.status(404).json({ error: 'One or more users not found' });
-        } 
-       
+        if (existingUsers.length !== shared_with.length) {
+            return response.status(404).json({ error: 'One or more users not found' });
+        }
+
         // If Group name is empty or consists of only white space(s)
         if (request.body.group_name.trim() === "") {
             return response.status(400).json({ error: 'Cannot create Group. Group name cannot be empty' });
@@ -81,52 +82,48 @@ const createGroup = async (request, response) => {
             return response.status(400).json({ error: 'Cannot create Group. At least one Group member is required' });
         }
 
-        // If the Group's admin/creator is left empty or consists of only white space(s)
-        if (request.body.admin.trim() === "") {
-            return response.status(400).json({ error: 'Cannot create Group. A Group admin is required' });
-        }
-
         // Check if the admin ID exists
-        const adminUser = await User.findById(admin);
+        const adminUser = await User.findById(adminId);
         if (!adminUser) {
             return response.status(400).json({ error: 'Cannot create Group. Invalid user ID for the admin' });
         }
 
-        // Check if all shared_with users ID's exist
+        // Check if all shared_with users IDs exist
         const existingGroupMembers = await User.find({ _id: { $in: shared_with } });
         if (existingGroupMembers.length !== shared_with.length) {
             return response.status(400).json({ error: 'Cannot create Group. Invalid user ID(s) in shared_with' });
         }
 
-        // Create a new group object based on the request body
+        // Create a new group object based on the request body and the extracted admin ID
         let newGroup = new Group({
             group_name: request.body.group_name,
             dateCreated: new Date(),
             shared_with: shared_with,
-            admin: admin._id
+            admin: adminId // Use the adminId obtained from the decoded token
         });
 
         // Save the new group to the database
         await newGroup.save();
 
-        // Pushing the new list to each existing user
+        // Push the new group's ID to each existing user's groups array
         existingUsers.forEach(async (user) => {
             user.groups.push(newGroup._id);
-            await user.save()
-        })
+            await user.save();
+        });
 
-        // Pushing list to the admin user too
-        admin.groups.push(newGroup._id)
-        await admin.save()
+        // Push the new group's ID to the admin's groups array too
+        adminUser.groups.push(newGroup._id);
+        await adminUser.save();
 
         // Respond with the newly created group
         response.json(newGroup);
     } catch (error) {
         // If any errors occur
         console.log("Error while creating group:\n", error);
-        response.status(500).json({ error: 'An error has occured' });
+        response.status(500).json({ error: 'An error has occurred' });
     }
 };
+
 
 const updateGroup = async (request, response) => {
     try {
