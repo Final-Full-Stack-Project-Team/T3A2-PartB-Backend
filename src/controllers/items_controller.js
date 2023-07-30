@@ -42,6 +42,27 @@ const getAllItems = async (request, response) => {
     }
 }
 
+// Endpoint to return all items found
+const getAllItemsFromList = async (request, response) => {
+    try {
+        let list = await List.findById(request.params._id)
+
+        if (!list) {
+            response.status(404).json({ error: "List not found" })
+            return
+        }
+
+        let itemIds = await list.items
+        let items = await Item.find({ _id: { $in: itemIds }})
+        response.send(items)
+
+    } catch(error) {
+        response.status(500).json({
+            error: error.message
+        })
+    }
+}
+
 // Endpoint to create a new item
 const createItem = async (request, response) => {
     try {
@@ -113,5 +134,6 @@ module.exports = {
     getAllItems,
     createItem,
     deleteItem,
-    modifyItem
+    modifyItem,
+    getAllItemsFromList
 }
