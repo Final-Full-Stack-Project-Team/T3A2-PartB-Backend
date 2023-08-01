@@ -135,7 +135,19 @@ const deleteList = async (request, response) => {
 // End point for adding items, modifying list name and any other data that is not relating to users
 const modifyList = async (request, response) => {
     try {
-        const list = await List.findByIdAndUpdate(request.params._id, request.body, {new: true})
+        if (request.body.items) {
+            const list = await List.findById(request.params._id)
+            const checkIfItemExists = list.items.some((item) => item.toString(request.body))
+            if (checkIfItemExists) {
+                //response.status(500).json({ error: "NO" })
+                //return
+                list.items = list.items.filter((item) => item.toString() !== request.body.items[0].toString());
+            }
+            let existingListItems = list.items
+            let newItems = [...existingListItems, ...request.body.items]
+            request.body = {...request.body, items: newItems}
+        }
+        const list = await List.findByIdAndUpdate(request.params._id, request.body, {new: true}).populate('items')
         if(!list) {
             response.status(404).json({ error: "List not found" })
             return
@@ -148,6 +160,7 @@ const modifyList = async (request, response) => {
         response.send(list)
     } catch(error) {
         response.status(500).json({error: error.message})
+        console.log(error)
     }
 }
 
