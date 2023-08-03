@@ -135,9 +135,9 @@ const updateGroup = async (request, response) => {
         }
 
         // If group_members is provided, check if it's an empty array
-        if (shared_with !== undefined && (!Array.isArray(shared_with) || shared_with.length === 0 || shared_with.every(member => member === ""))) {
+        /*if (shared_with !== undefined && (!Array.isArray(shared_with) || shared_with.length === 0 || shared_with.every(member => member === ""))) {
             return response.status(400).json({ error: 'Cannot edit Group. At least one Group member is required' });
-        }
+        }*/
 
         // Check if all group_members user IDs exist
         if (shared_with !== undefined) {
