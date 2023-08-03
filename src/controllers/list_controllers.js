@@ -65,16 +65,21 @@ const createList = async (request, response) => {
         const existingUsers = await User.find({ _id: { $in: shared_with } });
         // If the length of users is not equal to the existing users
         // Then one or more users were not found in the database
-        if (existingUsers.length !== shared_with.length || !admin) {
+
+        /*if (existingUsers?.length !== shared_with?.length || !admin) {
           return response.status(404).json({ error: 'One or more users not found' });
-        } 
+        } */
+
+        if (!admin) {
+            return response.status(404).json({ error: 'User not found' });
+        }
 
         // New list object being created
         let newList = new List({
             name: request.body.name,
             dateCreated: new Date(),
             isCompleted: false,
-            shared_with: shared_with,
+            shared_with: [],
             admin: admin._id
         })
 
