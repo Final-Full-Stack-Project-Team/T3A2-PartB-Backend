@@ -56,7 +56,7 @@ const signup = async (request, response) => {
          const emailValidation = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
          if (!emailValidation.test(email)) {
              return response.status(400).json({
-                 error: "The email address you have provided is not a valid format."
+                 error: "Email address is not a valid format."
              });
          }
 
