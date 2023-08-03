@@ -7,19 +7,20 @@ require('dotenv').config()
 // Endpoint for getting a single user
 const getUser = async (request, response) => {
     try{
-        let user = await User.findById(request.params._id)
+        let user = await User.findOne({email: request.params.email})
         // If a user is found, return the id and the name only
         if (user) {
             const userData = {
                 _id: user._id,
                 name: user.name,
                 lists: user.lists,
-                groups: user.groups
+                groups: user.groups,
+                email: user.email
             }
             response.send(userData)
         } else {
             // Otherwise, error response
-            response.status(404).json({ error: "User not found." })
+            response.json({ error: "User not found." })
             return
         }
     } catch(error) {
@@ -111,7 +112,8 @@ const login = async (request, response) => {
                     _id: user._id,
                     name: user.name,
                     lists: user.lists,
-                    groups: user.groups
+                    groups: user.groups,
+                    email: user.email
                 },
                 token: token
             })

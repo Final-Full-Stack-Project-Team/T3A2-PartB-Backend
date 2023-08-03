@@ -4,7 +4,7 @@ const {signup, login, passwordResetEmail, passwordResetPage, passwordResetForm, 
 
 // Define routes for handling user-related operations
 userRouter.get("/", getAllUsers)
-userRouter.get("/:_id", getUser)
+userRouter.get("/:email", getUser)
 userRouter.post("/signup", signup)
 userRouter.post("/login", login)
 userRouter.post("/password-reset-email", passwordResetEmail)

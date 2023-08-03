@@ -12,11 +12,11 @@ const getGroups = async (request, response) => {
       })
       .populate({
         path: 'shared_with',
-        select: 'email -_id' // Include only the 'name' property and exclude the '_id' property
+        select: 'email' // Include only the 'name' property and exclude the '_id' property
       })
       .populate({
         path: 'admin',
-        select: 'name -_id' // Include only the 'name' property and exclude the '_id' property
+        select: 'name email' // Include only the 'name' property and exclude the '_id' property
       })
       .lean(); // Use lean() to return plain JavaScript objects
   
@@ -34,11 +34,10 @@ const getGroup = async (request, response) => {
       const group = await Group.findById(groupId)
         .populate({
           path: 'shared_with',
-          select: 'email -_id' // Include only the 'name' property and exclude the '_id' property
+          select: 'email' // Include only the 'name' property and exclude the '_id' property
         })
         .populate({
           path: 'admin',
-          select: 'name -_id' // Include only the 'name' property and exclude the '_id' property
         })
         .lean(); // Use lean() to return plain JavaScript objects
   
