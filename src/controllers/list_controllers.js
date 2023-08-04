@@ -176,6 +176,12 @@ const addUserToList = async (request, response) => {
         const user = await User.findById(request.body.shared_with)
         const list = await List.findById(request.params._id)
 
+        if (request.body.shared_with.length === 0) {
+            response.status(200).json({ message: "List updated without new members" })
+            return
+        }
+
+
         if (!user) {
             response.status(404).json({ error: "User not found" })
             return
@@ -189,15 +195,14 @@ const addUserToList = async (request, response) => {
         // Spread syntax to get an array with the current users in the list
         const usersInList = [...list.shared_with]
 
+
         // Checks if the user is already in the list
-        const checkIfExistingUser = usersInList.some((userId) => userId.equals(request.body.shared_with));
-        if (checkIfExistingUser) {
-            response.status(400).json({ error: "User is already in this list" })
-            return
-        }
+        const newUsers = request.body.shared_with.filter(
+            (userId) => !usersInList.some((listUserId) => listUserId.equals(userId))
+        );
 
         // Push new user into the array of current users
-        usersInList.push(request.body.shared_with)
+        usersInList.push(...newUsers)
 
         // Update document using the updated users array
         const updatedList = await List.findByIdAndUpdate(request.params._id, {shared_with: usersInList}, {new: true})
