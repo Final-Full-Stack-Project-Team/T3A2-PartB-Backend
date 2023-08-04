@@ -142,16 +142,16 @@ const modifyList = async (request, response) => {
     try {
         if (request.body.items) {
             const list = await List.findById(request.params._id)
-            const checkIfItemExists = list.items.some((item) => item.toString(request.body))
-            if (checkIfItemExists) {
-                //response.status(500).json({ error: "NO" })
-                //return
-                list.items = list.items.filter((item) => item.toString() !== request.body.items[0].toString());
-            }
-            let existingListItems = list.items
-            let newItems = [...existingListItems, ...request.body.items]
+            // Convert request body items and existing list items to Sets
+            const requestItemsSet = new Set(request.body.items.map(item => item.toString()));
+
+            // Combine sets and convert back to an array without duplicates
+            const newItems = Array.from(requestItemsSet);
             request.body = {...request.body, items: newItems}
         }
+
+        
+
         const list = await List.findByIdAndUpdate(request.params._id, request.body, {new: true}).populate('items')
         if(!list) {
             response.status(404).json({ error: "List not found" })
