@@ -66,9 +66,19 @@ const getAllItemsFromList = async (request, response) => {
 // Endpoint to create a new item
 const createItem = async (request, response) => {
     try {
-        // New item object being created
+        const itemName = request.body.name;
+
+        let existingItem = await Item.findOne({ name: itemName });
+
+        if (existingItem) {
+            // If the item already exists, reuse the existing item
+            response.json(existingItem);
+            return;
+        }
+        
+        // If the item doesn't exist, create a new one
         let newItem = new Item({
-            name: request.body.name,
+            name: itemName,
         })
 
         // Save item to database
