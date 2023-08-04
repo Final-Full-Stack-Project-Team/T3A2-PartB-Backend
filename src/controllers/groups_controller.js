@@ -77,9 +77,9 @@ const createGroup = async (request, response) => {
         }
 
         // If shared_with is left empty or consists of only white space(s)
-        if (!Array.isArray(shared_with) || shared_with.length === 0 || shared_with.every(member => member === "")) {
+        /*if (!Array.isArray(shared_with) || shared_with.length === 0 || shared_with.every(member => member === "")) {
             return response.status(400).json({ error: 'Cannot create Group. At least one Group member is required' });
-        }
+        } */
 
         // Check if the admin ID exists
         const adminUser = await User.findById(adminId);
