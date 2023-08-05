@@ -1,5 +1,17 @@
 const mongoose = require('mongoose')
 
+
+const ItemSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true
+    },
+    checked: {
+        type: Boolean,
+        default: false
+    }
+})
+
 // Schema for list model
 const ListSchema = new mongoose.Schema({
     name: {
@@ -10,9 +22,7 @@ const ListSchema = new mongoose.Schema({
     isCompleted: Boolean,
 
     // Referencing the items collection
-    items: [{ 
-        type: mongoose.Types.ObjectId, 
-        ref: 'Item' }],
+    items: [ItemSchema],
 
     // Referencing the users collection
     shared_with: [{ 
