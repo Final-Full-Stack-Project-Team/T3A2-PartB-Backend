@@ -143,7 +143,7 @@ const modifyList = async (request, response) => {
         if (request.body.items) {
             const list = await List.findById(request.params._id)
             // Convert request body items and existing list items to Sets
-            const requestItemsSet = new Set(request.body.items.map(item => item.toString()));
+            const requestItemsSet = new Set(request.body.items.map(item => item));
 
             // Combine sets and convert back to an array without duplicates
             const newItems = Array.from(requestItemsSet);
