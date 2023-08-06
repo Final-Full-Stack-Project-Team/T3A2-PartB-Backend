@@ -98,8 +98,10 @@ app.use("/groups", groupsRouter)
 const listRouter = require('./routes/list_routes.js')
 app.use('/lists', listRouter)
 
+/*
 const itemRouter = require('./routes/item_routes.js')
 app.use('/items', itemRouter)
+*/
 
 
 // Keep this route at the end of this file, only before the module.exports!

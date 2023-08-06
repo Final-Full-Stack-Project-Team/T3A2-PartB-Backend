@@ -2,7 +2,7 @@ const Item = require('../models/items_model.js')
 const List = require('../models/list_model.js')
 
 // Endpoint to find a single item
-const getItem = async (request, response) => {
+/* const getItem = async (request, response) => {
     try {
         //Find the item by id from the url parameter
         let item = await Item.findById(request.params._id)
@@ -147,3 +147,4 @@ module.exports = {
     modifyItem,
     getAllItemsFromList
 }
+*/
