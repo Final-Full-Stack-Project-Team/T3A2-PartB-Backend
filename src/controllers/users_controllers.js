@@ -162,6 +162,7 @@ const sendEmail = async (email, text, subject, response) => {
     }
 }
 
+/*
 const passwordResetEmail = async (request, response) => {
     try{
     const user = await User.findOne({email: request.body.email})
@@ -259,13 +260,11 @@ const passwordResetForm = async (request, response) => {
         }
     }
 }
+*/
 
 module.exports = {
     getUser,
     getAllUsers,
     signup,
-    login,
-    passwordResetEmail,
-    passwordResetPage,
-    passwordResetForm
+    login
 }

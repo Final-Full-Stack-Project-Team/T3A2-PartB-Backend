@@ -7,9 +7,9 @@ userRouter.get("/", getAllUsers)
 userRouter.get("/:email", getUser)
 userRouter.post("/signup", signup)
 userRouter.post("/login", login)
-userRouter.post("/password-reset-email", passwordResetEmail)
-userRouter.get("/password-reset/:token/:_id", passwordResetPage)
-userRouter.put("/password-reset/:token/:_id/password-form", passwordResetForm)
+//userRouter.post("/password-reset-email", passwordResetEmail)
+//userRouter.get("/password-reset/:token/:_id", passwordResetPage)
+//userRouter.put("/password-reset/:token/:_id/password-form", passwordResetForm)
 
 // Export the userRouter to be used in other modules
 module.exports = userRouter
