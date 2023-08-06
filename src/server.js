@@ -27,7 +27,7 @@ app.use(helmet.contentSecurityPolicy({
 // array of origins for CORS configuration.
 const cors = require('cors');
 var corsOptions = {
-    origin: ["http://localhost:3000", "https://sage-churros-00fcd2.netlify.app/sign-in"],
+    origin: ["http://localhost:3000", "https://sage-churros-00fcd2.netlify.app"],
     optionsSuccessStatus: 200
 }
 app.use(cors(corsOptions));
