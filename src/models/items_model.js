@@ -1,5 +1,8 @@
 const mongoose = require('mongoose')
 
+//THIS IS FOR FUTURE DEVELOPMENT USE
+
+/*
 // Schema for list model
 const ItemSchema = new mongoose.Schema({
     name: {
@@ -11,3 +14,4 @@ const ItemSchema = new mongoose.Schema({
 const Item = mongoose.model('Item', ItemSchema)
 
 module.exports = Item
+*/

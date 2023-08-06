@@ -1,6 +1,8 @@
 const Item = require('../models/items_model.js')
 const List = require('../models/list_model.js')
 
+//THIS IS FOR FUTURE DEVELOPMENT USE
+
 // Endpoint to find a single item
 /* const getItem = async (request, response) => {
     try {

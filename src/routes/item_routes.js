@@ -1,6 +1,9 @@
 const express = require("express")
 const { getItem, getAllItems, createItem, modifyItem, deleteItem, getAllItemsFromList } = require("../controllers/items_controller.js")
 const itemRouter = express.Router()
+
+//THIS IS FOR FUTURE DEVELOPMENT USE
+
 /*
 itemRouter.get("/", getAllItems)
 itemRouter.get("/:_id", getItem)
