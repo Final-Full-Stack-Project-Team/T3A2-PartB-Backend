@@ -68,12 +68,12 @@ const createGroup = async (request, response) => {
         // If the length of users is not equal to the existing users
         // Then one or more users were not found in the database
         if (existingUsers.length !== shared_with.length) {
-            return response.status(404).json({ error: 'One or more users not found' });
+            return response.status(404).json({ error: 'One or more users not found.' });
         }
 
         // If Group name is empty or consists of only white space(s)
         if (request.body.group_name.trim() === "") {
-            return response.status(400).json({ error: 'Cannot create Group. Group name cannot be empty' });
+            return response.status(400).json({ error: 'Group name cannot be empty.' });
         }
 
         // If shared_with is left empty or consists of only white space(s)
